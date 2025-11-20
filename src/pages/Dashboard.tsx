@@ -6,6 +6,25 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import { Package, TrendingUp, AlertCircle, Users } from 'lucide-react'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Label } from 'recharts'
 
+// Format relative time (e.g., "2 hours ago", "3 days ago")
+function formatRelativeTime(dateString: string): string {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffSecs = Math.floor(diffMs / 1000)
+  const diffMins = Math.floor(diffSecs / 60)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffSecs < 60) return 'just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`
+  return `${Math.floor(diffDays / 365)}y ago`
+}
+
 export function Dashboard() {
   const { data: metricsData, isLoading: metricsLoading, error: metricsError } = useQuery<{ dashboardMetrics: DashboardMetrics }>({
     queryKey: ['dashboardMetrics'],
@@ -381,11 +400,15 @@ export function Dashboard() {
                         </span>
                       </td>
                       <td className="p-3 text-sm text-[hsl(var(--color-muted-foreground))]">
-                        {new Date(product.createdAt).toLocaleDateString('en-US', {
+                        <span title={new Date(product.createdAt).toLocaleString('en-US', {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
-                        })}
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}>
+                          {formatRelativeTime(product.createdAt)}
+                        </span>
                       </td>
                     </tr>
                   ))}
