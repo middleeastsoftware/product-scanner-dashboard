@@ -73,10 +73,73 @@ export function Dashboard() {
     },
   } as const
 
+  const SkeletonCard = () => (
+    <div className="animate-pulse">
+      <div className="h-4 bg-[hsl(var(--color-muted))] rounded w-1/3 mb-2"></div>
+      <div className="h-8 bg-[hsl(var(--color-muted))] rounded w-1/2"></div>
+    </div>
+  )
+
+  const SkeletonTable = () => (
+    <div className="animate-pulse space-y-3">
+      <div className="h-10 bg-[hsl(var(--color-muted))] rounded"></div>
+      <div className="h-16 bg-[hsl(var(--color-muted))] rounded"></div>
+      <div className="h-16 bg-[hsl(var(--color-muted))] rounded"></div>
+      <div className="h-16 bg-[hsl(var(--color-muted))] rounded"></div>
+    </div>
+  )
+
   if (metricsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading dashboard...</div>
+      <div className="min-h-screen p-8">
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Header Skeleton */}
+          <div className="animate-pulse">
+            <div className="h-10 bg-[hsl(var(--color-muted))] rounded w-1/3 mb-2"></div>
+            <div className="h-4 bg-[hsl(var(--color-muted))] rounded w-1/2"></div>
+          </div>
+
+          {/* Metrics Grid Skeleton */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardHeader className="pb-2">
+                  <SkeletonCard />
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+
+          {/* Charts Skeleton */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {[1, 2].map((i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <div className="animate-pulse">
+                    <div className="h-6 bg-[hsl(var(--color-muted))] rounded w-1/3 mb-2"></div>
+                    <div className="h-4 bg-[hsl(var(--color-muted))] rounded w-1/2"></div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="animate-pulse h-[250px] bg-[hsl(var(--color-muted))] rounded"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Table Skeleton */}
+          <Card>
+            <CardHeader>
+              <div className="animate-pulse">
+                <div className="h-6 bg-[hsl(var(--color-muted))] rounded w-1/4 mb-2"></div>
+                <div className="h-4 bg-[hsl(var(--color-muted))] rounded w-1/3"></div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <SkeletonTable />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
