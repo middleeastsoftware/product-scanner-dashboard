@@ -3,7 +3,7 @@ name: Release and Deploy
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*'   # Correct trigger: matches v1.0.0, v2.3.4, etc.
 
 env:
   REGISTRY: ghcr.io
@@ -15,6 +15,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+
     outputs:
       version: ${{ steps.version.outputs.version }}
 
@@ -25,9 +26,9 @@ jobs:
       - name: Extract version from tag
         id: version
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
+          VERSION="${GITHUB_REF#refs/tags/v}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
+          echo "Extracted version: $VERSION"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -127,16 +128,11 @@ jobs:
         if: failure()
         run: |
           echo "### Deployment Failed - Rolling Back :warning:" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Rolling back deployment..." >> $GITHUB_STEP_SUMMARY
-
           kubectl rollout undo deployment/product-scanner-dashboard -n api
           kubectl rollout status deployment/product-scanner-dashboard -n api --timeout=120s
 
-          echo "Rollback completed" >> $GITHUB_STEP_SUMMARY
-
   create-release:
-    needs: [build, deploy-production]
+    needs: build   # FIXED: no dependency on deploy-production
     if: always()
     runs-on: ubuntu-latest
     permissions:
@@ -151,14 +147,13 @@ jobs:
       - name: Generate changelog
         id: changelog
         run: |
-          # Get previous tag
+          CURRENT_TAG="${GITHUB_REF#refs/tags/v}"
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          CURRENT_TAG=${GITHUB_REF#refs/tags/}
 
           if [ -z "$PREV_TAG" ]; then
-            COMMITS=$(git log --pretty=format:"- %s (%h)" $CURRENT_TAG)
+            COMMITS=$(git log --pretty=format:"- %s (%h)")
           else
-            COMMITS=$(git log --pretty=format:"- %s (%h)" $PREV_TAG..$CURRENT_TAG)
+            COMMITS=$(git log --pretty=format:"- %s (%h)" "$PREV_TAG"..HEAD)
           fi
 
           {
