@@ -30,8 +30,8 @@ export const GET_DASHBOARD_METRICS = /* GraphQL */ `
 `
 
 export const GET_RECENT_PRODUCTS = /* GraphQL */ `
-  query GetRecentProducts($limit: Int) {
-    recentProducts(limit: $limit) {
+  query GetRecentProducts($limit: Int, $offset: Int) {
+    recentProducts(limit: $limit, offset: $offset) {
       id
       title
       vendor

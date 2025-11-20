@@ -1,9 +1,10 @@
+import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { graphqlClient, GET_DASHBOARD_METRICS, GET_RECENT_PRODUCTS, GET_PRODUCT_STATS, GET_DAILY_PRODUCT_COUNTS } from '@/lib/graphql-client'
 import type { DashboardMetrics, RecentProduct, ProductStats, DailyProductCount } from '@/types/dashboard'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart'
-import { Package, TrendingUp, AlertCircle, Users } from 'lucide-react'
+import { Package, TrendingUp, AlertCircle, Users, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Label } from 'recharts'
 
 // Format relative time (e.g., "2 hours ago", "3 days ago")
@@ -26,14 +27,20 @@ function formatRelativeTime(dateString: string): string {
 }
 
 export function Dashboard() {
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const itemsPerPage = 10
+
   const { data: metricsData, isLoading: metricsLoading, error: metricsError } = useQuery<{ dashboardMetrics: DashboardMetrics }>({
     queryKey: ['dashboardMetrics'],
     queryFn: () => graphqlClient.request(GET_DASHBOARD_METRICS),
   })
 
   const { data: productsData, error: productsError } = useQuery<{ recentProducts: RecentProduct[] }>({
-    queryKey: ['recentProducts'],
-    queryFn: () => graphqlClient.request(GET_RECENT_PRODUCTS, { limit: 10 }),
+    queryKey: ['recentProducts', currentPage],
+    queryFn: () => graphqlClient.request(GET_RECENT_PRODUCTS, {
+      limit: itemsPerPage,
+      offset: (currentPage - 1) * itemsPerPage
+    }),
   })
 
   const { data: statsData, error: statsError } = useQuery<{ productStats: ProductStats[] }>({
@@ -414,6 +421,31 @@ export function Dashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex items-center justify-between px-4 py-3 border-t">
+              <div className="text-sm text-[hsl(var(--color-muted-foreground))]">
+                Page {currentPage} • {itemsPerPage} items per page
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-md border border-[hsl(var(--color-border))] bg-[hsl(var(--color-background))] hover:bg-[hsl(var(--color-accent))] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage(p => p + 1)}
+                  disabled={!productsData?.recentProducts || productsData.recentProducts.length < itemsPerPage}
+                  className="inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-md border border-[hsl(var(--color-border))] bg-[hsl(var(--color-background))] hover:bg-[hsl(var(--color-accent))] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </button>
+              </div>
             </div>
           </CardContent>
         </Card>
