@@ -4,12 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag to deploy (e.g., v1.0.1)'
-        required: true
-        type: string
 
 env:
   REGISTRY: ghcr.io
