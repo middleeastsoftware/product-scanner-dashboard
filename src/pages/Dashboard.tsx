@@ -35,7 +35,7 @@ export function Dashboard() {
     queryFn: () => graphqlClient.request(GET_DASHBOARD_METRICS),
   })
 
-  const { data: productsData, error: productsError } = useQuery<{ recentProducts: RecentProduct[] }>({
+  const { data: productsData } = useQuery<{ recentProducts: RecentProduct[] }>({
     queryKey: ['recentProducts', currentPage],
     queryFn: () => graphqlClient.request(GET_RECENT_PRODUCTS, {
       limit: itemsPerPage,
@@ -43,7 +43,7 @@ export function Dashboard() {
     }),
   })
 
-  const { data: statsData, error: statsError } = useQuery<{ productStats: ProductStats[] }>({
+  const { data: statsData } = useQuery<{ productStats: ProductStats[] }>({
     queryKey: ['productStats'],
     queryFn: () => graphqlClient.request(GET_PRODUCT_STATS),
   })
